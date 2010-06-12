@@ -7,6 +7,7 @@ require 'hpricot'
 require 'open-uri'
 
 # Do Twitter first...
+begin
 twitter_statuses = Hpricot.XML(open('http://twitter.com/statuses/user_timeline.xml?screen_name=symsonic&count=5'))
 
 f = File.open('twitter.inc', 'w')
@@ -15,19 +16,21 @@ f = File.open('twitter.inc', 'w')
   end
 f.close
 
+rescue OpenURI::HTTPError
+  puts 'Error opening Twitter feed.'
+end
+
 # ...and move on to Github
 github_feed = Hpricot.XML(open('http://github.com/tspangler.atom'))
 
 f = File.open('github.inc', 'w')
   github_feed.search('title').each do |event|
-    # Some basic filters since we only really want commits and pushes
-    if event.inner_html.index('commit') || event.inner_html.index('push') || (event.inner_html.index('created') && !event.inner_html.index('wiki') && !event.inner_html.index('gist')) && !event.inner_html.index('activity')    
+    # Some basic filters since we only really want commits and pushes.
+    # There are definitely much better ways to do this but I'm doing it quick and dirty.
+    if event.inner_html.index('fork') || event.inner_html.index('commit') || event.inner_html.index('push') || (event.inner_html.index('created') && !event.inner_html.index('wiki') && !event.inner_html.index('gist')) && !event.inner_html.index('activity')    
       # Strip out all redundant mentions of my username
       f.puts "<li>#{event.inner_html.gsub(/tspangler[\/]?/, '').strip}</li>"
-      
-      # linkify project names
-      # "pushed to branch at project_name"
-      
+      # TODO: Linkify project names
     end
   end
 f.close
