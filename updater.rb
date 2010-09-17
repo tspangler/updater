@@ -7,7 +7,7 @@ require 'hpricot'
 require 'open-uri'
 
 def urlify_and_tweetify(str)
-  str.scan(/http:\/\/[\.\/?&\-\w]+\.[net|com|org|la]+[\/\.?&\-\w]+/).each do |s|
+  str.scan(/http:\/\/[\.\/?&\-\w]+\.[\w]+[\/\.?&\-\w]+/).each do |s|
     str.gsub!(s, '<a href="' + s + '" target="_blank">' + s + '</a>')
   end
     
@@ -22,6 +22,14 @@ def urlify_and_tweetify(str)
   str
 end
 
+def fix_entities(str)
+  str.scan(/&amp;[a-z]+;/).each do |sub|
+    str.gsub!(sub, sub.gsub('&amp;', '&'))
+  end
+
+  str
+end
+
 # Do Twitter first...
 begin
 twitter_statuses = Hpricot.XML(open('http://twitter.com/statuses/user_timeline.xml?screen_name=symsonic&count=5'))
@@ -29,7 +37,7 @@ twitter_statuses = Hpricot.XML(open('http://twitter.com/statuses/user_timeline.x
 f = File.open('twitter.inc', 'w')
   twitter_statuses.search('status').each do |tweet|
     tweet_id = tweet.search('id').first.inner_html
-    tweet_text = urlify_and_tweetify(tweet.search('text').inner_html)
+    tweet_text = urlify_and_tweetify(fix_entities(tweet.search('text').inner_html))
 
     f.puts "<li>#{tweet_text}</li>"
   end
