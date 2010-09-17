@@ -6,13 +6,32 @@ require 'rubygems'
 require 'hpricot'
 require 'open-uri'
 
+def urlify_and_tweetify(str)
+  str.scan(/http:\/\/[\.\/?&\-\w]+\.[net|com|org|la]+[\/\.?&\-\w]+/).each do |s|
+    str.gsub!(s, '<a href="' + s + '" target="_blank">' + s + '</a>')
+  end
+    
+  # Now tweetify...
+  str.scan(/@[_\w]+/).each do |s|
+    s.slice!(0) # Chop off the initial @ from the username
+    
+    # Yes, this is dumb but I want the @ to be part of the link, like it is on Twitter itself
+    str.gsub!('@' + s, '<a href="http://twitter.com/' + s + '" target="_blank">' + '@' + s + '</a>')
+  end
+
+  str
+end
+
 # Do Twitter first...
 begin
 twitter_statuses = Hpricot.XML(open('http://twitter.com/statuses/user_timeline.xml?screen_name=symsonic&count=5'))
 
 f = File.open('twitter.inc', 'w')
   twitter_statuses.search('status').each do |tweet|
-    f.puts "<li><a href='http://twitter.com/symsonic/status/#{tweet.search("id").first.inner_html}'>#{tweet.search("text").inner_html}</a></li>"
+    tweet_id = tweet.search('id').first.inner_html
+    tweet_text = urlify_and_tweetify(tweet.search('text').inner_html)
+
+    f.puts "<li>#{tweet_text}</li>"
   end
 f.close
 
