@@ -48,7 +48,7 @@ rescue OpenURI::HTTPError
 end
 
 # ...and move on to Github
-github_feed = Hpricot.XML(open('http://github.com/tspangler.atom'))
+github_feed = Hpricot.XML(open('https://github.com/tspangler.atom'))
 
 f = File.open('github.inc', 'w')
   github_feed.search('title').each do |event|
