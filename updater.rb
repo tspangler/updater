@@ -19,6 +19,11 @@ def urlify_and_tweetify(str)
     str.gsub!('@' + s, '<a href="http://twitter.com/' + s + '" target="_blank">' + '@' + s + '</a>')
   end
 
+  # And convert hashtags
+  str.scan(/#[_\w]+/).each do |h|
+    str.gsub!(h, '<a href="http://twitter.com/#!/search/' + h + '">' + h + '</a>')
+  end
+
   str
 end
 
