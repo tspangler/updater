@@ -5,6 +5,7 @@
 require 'rubygems'
 require 'hpricot'
 require 'open-uri'
+require 'cgi'
 
 def urlify_and_tweetify(str)
   str.scan(/http:\/\/[\.\/?&\-\w]+\.[\w]+[\/\.?&\-\w]+/).each do |s|
@@ -21,7 +22,7 @@ def urlify_and_tweetify(str)
 
   # And convert hashtags
   str.scan(/#[_\w]+/).each do |h|
-    str.gsub!(h, '<a href="http://twitter.com/#!/search/' + h + '">' + h + '</a>')
+    str.gsub!(h, '<a href="http://twitter.com/#!/search/' + CGI.escape(h) + '">' + h + '</a>')
   end
 
   str
